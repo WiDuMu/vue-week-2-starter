@@ -10,11 +10,13 @@
 </head>
 
 <body>
-    <div id="app">
+    <div id="app" v-cloak>
 
 
         <!-- TODO show errors from form validation -->
-
+        <div class="alert alert-danger" v-show="errors.length > 0">
+            <li v-for="error in errors" v-bind:key="error">{{error}}</li>
+        </div>
 
         <div class="card add-student m-2 p-2">
             <h4 class="card-title">Add new student</h4>
@@ -22,15 +24,15 @@
             <div class="form-group">
                 <label for="name">Name</label>
                 <!-- TODO v-model newStudentName -->
-                <input id="name" class="form-control">
+                <input id="name" class="form-control" v-model.trim="newStudentName">
             </div>
             <div class="form-group">
                 <label for="starID">Star ID</label>
                 <!-- TODO v-model newStarID -->
-                <input id="starID" class="form-control">
+                <input id="starID" class="form-control" v-model.trim="newStarID">
             </div>
             <!-- TODO v-on:click event handler -->
-            <button class="btn btn-primary">Add</button>
+            <button class="btn btn-primary" v-on:click="addStudent">Add</button>
         </div>
 
         <div class="card student-list m-2 p-2">
@@ -46,6 +48,11 @@
                    <!-- TODO create table rows 
                    Each row will have a checkbox, bound to the app's data 
                    When the checkbox is checked/unchecked, the student will be signed in/out -->
+                   <tr v-for="student in students" v-bind:key="student.starID" v-bind:class="{ present: student.present, absent: !student.present }">
+                       <td>{{student.name}}</td>
+                       <td>{{student.starID}}</td>
+                       <td><input type="checkbox" v-model="student.present" v-on:change="welcomeStudent(student)"></td>
+                   </tr>
 
                 </table>
             </div>
@@ -53,6 +60,14 @@
 
 
         <!-- TODO show a message when student arrives or leaves  -->
+        <div v-show="mostRecentStudent.name">
+            <div v-if="mostRecentStudent.present" class="alert alert-success">
+                Welcome, {{ mostRecentStudent.name}}!
+            </div>
+            <div v-else class="alert alert-info">
+                Goodbye, {{ mostRecentStudent.name}}. See you later!
+            </div>
+        </div>
 
 
     </div>
@@ -60,8 +75,38 @@
     <script>
 
 
-        // TODO Vue app     
+        let app = Vue.createApp({
+            data() {
+                return {
+                    students: [
+                        { name: 'A. Student', starID: 'aa1234bb', present: false},
+                        { name: 'B. Student', starID: 'cc1234dd', present: false},
+                        { name: 'C. Student', starID: 'ee1234aa', present: false}
+                    ],
+                    errors: [],
+                    mostRecentStudent: {}
+                }
+            },
+            methods: {
+                addStudent() {
+                    this.errors = []
+                    if (!this.newStudentName) {this.errors.push('Must enter student name!')}
+                    if (!this.newStarID) {this.errors.push('Must have StarID')}
+                    if (this.errors.length == 0) {
+                    let newStudent = { name: this.newStudentName, starID: this.newStarID, present: false}
+                    this.students.push(newStudent)
+                    this.newStudentName = ''
+                    this.newStarID = '';
+                    }
+                },
+                welcomeStudent(student) {
+                    this.mostRecentStudent = student
 
+                }
+            }
+        })
+
+        app.mount('#app')
 
     </script>
 
